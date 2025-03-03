@@ -1,0 +1,129 @@
+function! GetTerminalBuffer() 
+  let term_buffers = term_list()
+
+  if empty(term_buffers)
+    call OpenTerminalRight()
+    let buf = bufnr('%')
+  else
+    let buf = term_buffers[0]
+  endif
+  return buf
+
+endfunction
+
+function! OpenTerminalRight()
+    botright vsplit
+    vertical resize 40
+    terminal++curwin
+endfunction
+
+nnoremap <M-t> :call OpenTerminalRight()<CR>
+
+autocmd BufEnter * if winnr('$') == 1 && &buftype == 'terminal' | quit! | endif
+
+"this will run code with input
+
+function! RunCodeWithInput()
+    let buf = GetTerminalBuffer()
+    call term_sendkeys(buf,"type input.txt\<CR>")
+    call term_sendkeys(buf, "a\<CR>")
+endfunction
+
+nnoremap <M-e> :call RunCodeWithInput()<CR>
+
+"this will just run the code binary, use Alt + r
+
+
+function! RunCode()
+    let buf = GetTerminalBuffer()
+    call term_sendkeys(buf, "a\<CR>")
+endfunction
+
+" Map <M-r> to call the function
+nnoremap <M-r> :call RunCode()<CR>
+
+
+
+function! PasteCode()
+    let codename = expand('%')
+    let code = readfile(codename)
+    let codestring = join(code,"\n")
+    let newcode = substitute(codestring, 'open_file;', '//open_file;', 'g')
+    call setreg('+', newcode)
+    echo "Succesfully Copied to Clipboard"
+
+endfunction
+
+nnoremap <M-p> :call PasteCode()<CR>
+
+
+
+
+"this will paste input.txt from clipboard use Alt + i
+
+function! CopyInput()
+    let clipboard_content = split(getreg('+'), '\n')
+    let clipboard_content_with_newline = map(clipboard_content, 'v:val . "\n"')
+    call writefile(clipboard_content_with_newline, "input.txt")
+endfunction
+
+nnoremap <M-i> :call CopyInput()<CR>
+
+"Open Code with the given filename, use Alt + o
+
+function! OpenCode() 
+    let buf = GetTerminalBuffer()
+    call term_setkill(buf,"kill")
+    call term_sendkeys(buf, "exit\<CR>")
+
+    let tabstrings = [getreg('+')]
+    let tabname = join(tabstrings,'')
+    let tabname = substitute(tabname,'\n','','g')
+    let tabname = tabname . ".cpp"
+
+    if !filereadable(tabname)
+        let template_code = readfile("template.cpp")
+        call writefile(template_code,tabname)
+    endif
+
+    let insturction = "tabnew " . tabname
+    execute insturction
+    tabprevious
+    tabclose!
+endfunction
+
+
+nnoremap <M-o> :call OpenCode()<CR>
+
+"Create new filename by just copying(it sets the file name from clipboard),
+"use Alt + n
+
+
+function! NewTab()
+    let tabstrings = [getreg('+')]
+    let tabname = join(tabstrings,'')
+    let tabname = substitute(tabname,'\n','','g')
+    let tabname = tabname . ".cpp"
+
+    if !filereadable(tabname)
+        let template_code = readfile("template.cpp")
+        call writefile(template_code,tabname)
+    endif
+
+    let insturction = "tabnew " . tabname
+    execute insturction
+endfunction
+
+
+nnoremap <M-n> :call NewTab()<CR>
+
+"this portion will compile code
+
+function! CompileCode()
+        let tabname = expand('%')
+        let buf = GetTerminalBuffer()
+        let instruction = "g++ -std=c++17 \"" . tabname . "\" -o a\<CR>"
+        call term_sendkeys(buf,instruction)
+endfunction
+
+nnoremap <M-b> :call CompileCode()<CR>
