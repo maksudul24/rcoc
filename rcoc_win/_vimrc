@@ -17,11 +17,8 @@ function! OpenTerminalRight()
     terminal++curwin
 endfunction
 
-nnoremap <M-t> :call OpenTerminalRight()<CR>
 
-autocmd BufEnter * if winnr('$') == 1 && &buftype == 'terminal' | quit! | endif
 
-"this will run code with input
 
 function! RunCodeWithInput()
     let buf = GetTerminalBuffer()
@@ -29,19 +26,13 @@ function! RunCodeWithInput()
     call term_sendkeys(buf, "a\<CR>")
 endfunction
 
-nnoremap <M-e> :call RunCodeWithInput()<CR>
 
-"this will just run the code binary, use Alt + r
 
 
 function! RunCode()
     let buf = GetTerminalBuffer()
     call term_sendkeys(buf, "a\<CR>")
 endfunction
-
-" Map <M-r> to call the function
-nnoremap <M-r> :call RunCode()<CR>
-
 
 
 function! PasteCode()
@@ -54,12 +45,7 @@ function! PasteCode()
 
 endfunction
 
-nnoremap <M-p> :call PasteCode()<CR>
 
-
-
-
-"this will paste input.txt from clipboard use Alt + i
 
 function! CopyInput()
     let clipboard_content = split(getreg('+'), '\n')
@@ -67,9 +53,7 @@ function! CopyInput()
     call writefile(clipboard_content_with_newline, "input.txt")
 endfunction
 
-nnoremap <M-i> :call CopyInput()<CR>
 
-"Open Code with the given filename, use Alt + o
 
 function! OpenCode() 
     let buf = GetTerminalBuffer()
@@ -93,12 +77,6 @@ function! OpenCode()
 endfunction
 
 
-nnoremap <M-o> :call OpenCode()<CR>
-
-"Create new filename by just copying(it sets the file name from clipboard),
-"use Alt + n
-
-
 function! NewTab()
     let tabstrings = [getreg('+')]
     let tabname = join(tabstrings,'')
@@ -115,9 +93,7 @@ function! NewTab()
 endfunction
 
 
-nnoremap <M-n> :call NewTab()<CR>
 
-"this portion will compile code
 
 function! CompileCode()
         let tabname = expand('%')
@@ -126,4 +102,30 @@ function! CompileCode()
         call term_sendkeys(buf,instruction)
 endfunction
 
+"this portion will compile code
 nnoremap <M-b> :call CompileCode()<CR>
+
+"open the terminal right
+nnoremap <M-t> :call OpenTerminalRight()<CR>
+
+"this will run code with input
+nnoremap <M-e> :call RunCodeWithInput()<CR>
+
+"this will paste input.txt from clipboard use Alt + i
+nnoremap <M-i> :call CopyInput()<CR>
+
+"this will just run the code binary, use Alt + r
+nnoremap <M-r> :call RunCode()<CR>
+
+"this will paste the code with added '//open_file'
+nnoremap <M-p> :call PasteCode()<CR>
+
+"Open Code with the given filename, use Alt + o
+nnoremap <M-o> :call OpenCode()<CR>
+
+"Create new filename by just copying(it sets the file name from clipboard),
+"use Alt + n
+nnoremap <M-n> :call NewTab()<CR>
+
+"optional the last window will not be a terminal
+"autocmd BufEnter * if winnr('$') == 1 && &buftype == 'terminal' | quit! | endif
